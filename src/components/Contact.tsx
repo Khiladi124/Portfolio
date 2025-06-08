@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, Github, Linkedin, Code } from 'lucide-react';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const  NODEMAILER_API = process.env.NODEMAILER_API;
-
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -14,8 +9,6 @@ const Contact = () => {
     subject: '',
     message: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -24,32 +17,15 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    try {
-      const response = await fetch(NODEMAILER_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (response.ok) {
-        setSubmitStatus('success');
-        setFormData({ name: '', email: '', subject: '', message: '' });
-      } else {
-        setSubmitStatus('error');
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-      setTimeout(() => setSubmitStatus('idle'), 5000);
-    }
+    // Construct Gmail compose URL with form data
+    const gmailBody = `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&to=abhishek.gangwar.04.001@gmail.com&su=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(gmailBody)}`;
+    
+    // Open Gmail in a new tab
+    window.open(gmailUrl, '_blank');
   };
 
   const contactInfo = [
@@ -181,23 +157,13 @@ const Contact = () => {
               
               <motion.button
                 type="submit"
-                disabled={isSubmitting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`w-full flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium transition-all duration-200 ${
-                  isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-600 hover:to-purple-600'
-                }`}
+                className="w-full flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium transition-all duration-200 hover:from-blue-600 hover:to-purple-600"
               >
                 <Send size={20} />
-                <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+                <span>Send Message</span>
               </motion.button>
-              
-              {submitStatus === 'success' && (
-                <p className="text-green-400 text-center">Message sent successfully!</p>
-              )}
-              {submitStatus === 'error' && (
-                <p className="text-red-400 text-center">Failed to send message. Please try again.</p>
-              )}
             </form>
           </motion.div>
 
